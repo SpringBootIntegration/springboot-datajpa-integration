@@ -19,6 +19,8 @@ package com.edurt.repository;
 
 import com.edurt.model.DataJpaArticle;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * DataJpaArticleRepository <br/>
@@ -32,22 +34,34 @@ public interface DataJpaArticleRepository extends JpaRepository<DataJpaArticle, 
 
     /**
      * 生成SQL select * from datajpa_article where id = ?
-     *
+     * <p>
      * datajpa 解析方法的时候, 首先把多余的前缀去掉,然后对剩下的部分解析(find, findBy, read, readBy, get, getBy)
-     *
+     * <p>
      * 比如:
-     *
-     *  findById 解析步骤: findByIdLong
-     *
-     *  1. 剔除findBy
-     *  2. 判断Id(根据pojo规范,将首字母变为小写)
-     *  3. 从右向左截取第一个大写字母开头的字符串(Id)
-     *  4. 处理剩下的Id部分(先判断实体中是否包含id属性)
-     *  5. 直接进行sql生成
-     *
-     *  特殊情况: 字段中包含_   id_long  findById_Long  findById_long
-     *
+     * <p>
+     * findById 解析步骤: findByIdLong
+     * <p>
+     * 1. 剔除findBy
+     * 2. 判断Id(根据pojo规范,将首字母变为小写)
+     * 3. 从右向左截取第一个大写字母开头的字符串(Id)
+     * 4. 处理剩下的Id部分(先判断实体中是否包含id属性)
+     * 5. 直接进行sql生成
+     * <p>
+     * 特殊情况: 字段中包含_   id_long  findById_Long  findById_long
      */
     DataJpaArticle findById(Integer id);
+
+    // nativeQuery 用于标识是否使用本地SQL
+    @Query(value = "SELECT id, title FROM datajpa_article WHERE id=?1",
+            nativeQuery = true)
+    DataJpaArticle queryById(Integer id);
+
+    @Query(value = "SELECT id, title FROM datajpa_article WHERE id = :id",
+            nativeQuery = true)
+    DataJpaArticle queryById2(@Param(value = "id") Integer id);
+
+    @Query(value = "select id, title from DataJpaArticle where id = ?1",
+            nativeQuery = false)
+    Object[] queryById3(Integer id);
 
 }
